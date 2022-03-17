@@ -28,9 +28,7 @@ import System.Console.CmdArgs
 import           Query (doQuery)
 import Debug.Trace
 
-type Save = ([String], [[Float]])
-
-type Matrix = (Dm.Map Text (Dm.Map Int Double))
+type Save = ([String], [[(Int, Float)]])
 
 readTest :: FilePath -> IO Save
 readTest name = do
@@ -79,9 +77,9 @@ handleQuery query matrix_ defs = do
       val <- load matrix_
       case val of
         Right (aa,bb) -> do
-          let l = search (unpack query) (aa) bb
           fs <- DT.readFile defs
           let ss = splitOn "\n" fs
+          let l = search (unpack query) (aa) bb (Data.List.length ss)
           let yy = stripLines ss (Data.List.reverse $ sortOn snd (l))
           return $ Right (Data.Text.intercalate "\n" yy)
         Left err -> return $ Left (show err)
