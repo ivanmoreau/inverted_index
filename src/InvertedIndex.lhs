@@ -19,7 +19,7 @@ Boilerplate:
 \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
-module VectorialSpaceModel (  genVecs, search ) where
+module InvertedIndex (  genVecs, search ) where
 
 import           TFIDFV (weightTFIDF, weightTFIDF_Query)
 import Data.Text (replace, Text, unpack)

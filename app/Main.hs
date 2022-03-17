@@ -15,7 +15,7 @@ See README for more info
 
 module Main (main) where
 
-import           VectorialSpaceModel (genVecs, search)
+import           InvertedIndex (genVecs, search)
 import qualified Data.ByteString as BS
 import           Data.List
 import qualified Data.Map as Dm
@@ -87,12 +87,12 @@ handleQuery query matrix_ defs = do
         Left err -> return $ Left (show err)
 
 
-something :: VectorialSpaceModel -> IO (Either String Text)
+something :: InvertedIndex -> IO (Either String Text)
 something (Model from to) = handleMatrix (pack from) (pack to)
 something (Query defs from q) = handleQuery (pack q) (pack from) defs
 
 
-data VectorialSpaceModel = Model {from :: String, to :: String}
+data InvertedIndex = Model {from :: String, to :: String}
   | Query {ogfile :: String, model :: String, query :: String}
   deriving (Show, Data, Typeable)
 
