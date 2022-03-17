@@ -23,31 +23,22 @@ module InvertedIndex (  genVecs, search ) where
 
 import           TFIDFV (weightTFIDF, weightTFIDF_Query)
 import Data.Text (replace, Text, unpack)
-import Data.List (transpose)
+import Data.List (transpose, (\\), sortOn)
 import Debug.Trace
 \end{code}
 
 Producto punto:
 \begin{code}
--- dot :: Num a => [a] -> [a] -> a
--- dot x y = sum $ zipWith (*) x y
-dot :: InvertedI -> Int -> [Float] -> Float
-dot x i y = f x y where
-  f [] [] = 0
-  f (x:xs) (y:ys) = f xs ys + case lookup i x of
-    Nothing -> 0.0
-    Just k -> k * y
+dot :: Num a => [a] -> [a] -> a
+dot x y = sum $ zipWith (*) x y
 \end{code}
 
 Usando el coseno, la similaridad entre el documento d$_j$ y la
 consulta q, puede ser calculado como:
 \begin{code}
-cos_ :: InvertedI -> Int -> [Float] -> Float
-cos_ dⱼ i q = (dot dⱼ i q)/(p (map k dⱼ) * p q)
+cos_ :: [Float] -> [Float] -> Float
+cos_ dⱼ q = (dot dⱼ q)/(p dⱼ * p q)
   where p a = sqrt $ sum $ map (\x -> x*x) a
-        k o = case lookup i o of
-          Nothing -> 0.0
-          Just y -> y
 \end{code}
 
 Definimos los tipos para el índice invertido.
@@ -66,11 +57,13 @@ search :: String --Query
   -> [(Int, Float)] -- Matches
 search q l f ii = let
   qq = weightTFIDF_Query l ii q
-  qq2 = filter (\u -> (>0.0) $ snd u) $ zip [0..] (trace (show qq) qq) :: [(Int, Float)] -- Word, Weigth
-  nl = map (f !!) $ map fst qq2
-  oo = map (\p -> cos_ nl p (map snd qq2)) [0..(ii - 1)]
+  oo = map (\p -> cos_ qq p) (kl f) 
   ot = zip [0..] oo in
-  filter (\(_,n) -> n>0.0) ot
+  filter (\(_,n) -> n>0.0) ot where
+  kl p = transpose $ map kj p
+  kj p = let ff = map fst p 
+             nff = map (\z -> (z,0.0)) $ [0..ii - 1] \\ ff in
+             map snd $ sortOn fst $ p ++ nff
 \end{code}
 Es probable que la implementación dada en este caso sea inferior
 a la de usar vectores directamente. Especialemente porque hay
